@@ -50,6 +50,10 @@ Run Locally
 
 
 git clone <your-repo-url>
-cd <repo-name>
-npm install
-npm run dev
+
+Follow these steps
+1. cd <repo-name>
+
+2. npm install
+
+3. npm run dev
