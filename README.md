@@ -49,10 +49,10 @@ ServiceConnect is tailored specifically for South Africa.
 Run Locally
 
 
-git clone <your-repo-url>
+git clone The repo...
 
 Follow these steps
-1. cd <repo-name>
+1. cd repo-name
 
 2. npm install
 
