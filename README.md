@@ -49,18 +49,7 @@ ServiceConnect is tailored specifically for South Africa.
 Run Locally
 
 
-<<<<<<< HEAD:README.md
-git clone The repo...
-
-Follow these steps
-1. cd repo-name
-
-2. npm install
-
-3. npm run dev
-=======
 git clone <your-repo-url>
 cd <repo-name>
 npm install
 npm run dev
->>>>>>> 782778d2 (ensure project can start with npm run dev):ServiceConnect/README.md

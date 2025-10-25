@@ -1,4 +1,5 @@
 import { MapPin, Mail, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -24,10 +25,11 @@ const Footer = () => {
           <div className="col-span-1">
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-primary-foreground/80">
-              <li><a href="#" className="hover:text-secondary transition-colors">How It Works</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Browse Services</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Become a Provider</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Pricing</a></li>
+              <li><Link to="/how-it-works" className="hover:text-secondary transition-colors">How It Works</Link></li>
+              <li><Link to="/services" className="hover:text-secondary transition-colors">Browse Services</Link></li>
+              <li><Link to="/become-provider" className="hover:text-secondary transition-colors">Become a Provider</Link></li>
+              <li><Link to="/pricing" className="hover:text-secondary transition-colors">Pricing</Link></li>
+              <li><Link to="/blog" className="hover:text-secondary transition-colors">Blog & Resources</Link></li>
             </ul>
           </div>
 
@@ -35,10 +37,10 @@ const Footer = () => {
           <div className="col-span-1">
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-primary-foreground/80">
-              <li><a href="#" className="hover:text-secondary transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Safety Tips</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Privacy Policy</a></li>
+              <li><Link to="/support" className="hover:text-secondary transition-colors">Help Center</Link></li>
+              <li><Link to="/support#safety" className="hover:text-secondary transition-colors">Safety Tips</Link></li>
+              <li><Link to="/terms" className="hover:text-secondary transition-colors">Terms of Service</Link></li>
+              <li><Link to="/terms#privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>
 
