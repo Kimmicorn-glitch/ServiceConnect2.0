@@ -1,4 +1,5 @@
 import { MapPin, Mail, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -24,10 +25,24 @@ const Footer = () => {
           <div className="col-span-1">
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-primary-foreground/80">
-              <li><a href="#" className="hover:text-secondary transition-colors">How It Works</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Browse Services</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Become a Provider</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Pricing</a></li>
+              <li>
+                <Link to="/" className="hover:text-secondary transition-colors">How It Works</Link>
+              </li>
+              <li>
+                <Link to="/services" className="hover:text-secondary transition-colors">Browse Services</Link>
+              </li>
+              <li>
+                <Link to="/providers" className="hover:text-secondary transition-colors">Become a Provider</Link>
+              </li>
+              <li>
+                <Link to="/about" className="hover:text-secondary transition-colors">Pricing</Link>
+              </li>
+              <li>
+                <Link to="/admin" className="hover:text-secondary transition-colors">Admin</Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>
+              </li>
             </ul>
           </div>
 
@@ -35,10 +50,10 @@ const Footer = () => {
           <div className="col-span-1">
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-primary-foreground/80">
-              <li><a href="#" className="hover:text-secondary transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Safety Tips</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-secondary transition-colors">Privacy Policy</a></li>
+              <li><Link to="/help" className="hover:text-secondary transition-colors">Help Center</Link></li>
+              <li><Link to="/safety" className="hover:text-secondary transition-colors">Safety Tips</Link></li>
+              <li><Link to="/terms" className="hover:text-secondary transition-colors">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>
 
@@ -52,7 +67,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-5 w-5 flex-shrink-0" />
-                <span>support@serviceconnect.co.za</span>
+                <Link to="/contact" className="hover:text-secondary transition-colors">support@serviceconnect.co.za</Link>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-5 w-5 flex-shrink-0" />

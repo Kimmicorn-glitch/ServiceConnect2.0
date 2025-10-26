@@ -20,6 +20,13 @@ import Index from "./pages/Index";
 import Services from "./pages/Services";
 import Providers from "./pages/Providers";
 import About from "./pages/About";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
+import Contact from "./pages/Contact";
+import HelpCenter from "./pages/HelpCenter";
+import SafetyTips from "./pages/SafetyTips";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 // Create a client for React Query (handles data caching)
@@ -45,6 +52,13 @@ const App = () => (
           <Route path="/services" element={<Services />} /> {/* Services listing */}
           <Route path="/providers" element={<Providers />} /> {/* Provider profiles */}
           <Route path="/about" element={<About />} /> {/* About page */}
+          <Route path="/contact" element={<Contact />} /> {/* Contact page */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<Admin />} /> {/* Admin dashboard */}
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/safety" element={<SafetyTips />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           
           {/* Catch-all route - shows 404 page for any unmatched URLs */}
           <Route path="*" element={<NotFound />} />

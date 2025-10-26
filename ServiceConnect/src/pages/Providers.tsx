@@ -55,7 +55,7 @@ const Providers = () => {
     <div className="min-h-screen bg-background">
       {/* Navigation Bar */}
       <nav className="bg-primary text-primary-foreground shadow-lg">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">ServiceConnect</h1>
           <div className="flex gap-2">
             <Button 
@@ -64,14 +64,10 @@ const Providers = () => {
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Services
+              Services
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/")}
-            >
-              Home
-            </Button>
+            <Button variant="outline" onClick={() => navigate("/")}>Home</Button>
+            <Button variant="outline" onClick={() => navigate("/contact")}>Contact</Button>
           </div>
         </div>
       </nav>

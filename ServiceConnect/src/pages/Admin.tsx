@@ -33,17 +33,42 @@ const Admin = () => {
   const [loadingProviders, setLoadingProviders] = useState(false);
 
   useEffect(() => {
+    const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
+
+    const tryFetchJson = async (path: string, opts?: RequestInit) => {
+      const url = BACKEND ? `${BACKEND}${path}` : path;
+      try {
+        const res = await fetch(url, opts);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (err) {
+        console.warn("fetch failed", url, err);
+        return null;
+      }
+    };
+
+    const MOCK_STATS: PlatformStats = { users: 1024, providers: 234, bookings: 456, reviews: 789 };
+
     const checkAdmin = async () => {
       try {
-        const response = await fetch('https://backend.youware.com/api/auth/is-admin');
-        const data = await response.json();
-        setIsAdmin(data.isAdmin);
-        
-        if (data.isAdmin) {
-          // Fetch platform stats
-          const statsResponse = await fetch('https://backend.youware.com/api/admin/stats');
-          const statsData = await statsResponse.json();
-          setStats(statsData.stats);
+      const token = (typeof window !== 'undefined') ? localStorage.getItem('sc_admin_token') : null;
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const data = await tryFetchJson('/api/auth/is-admin', { headers });
+        if (data && typeof data.isAdmin !== 'undefined') {
+          setIsAdmin(!!data.isAdmin);
+
+          if (data.isAdmin) {
+            const statsData = await tryFetchJson('/api/admin/stats');
+            setStats(statsData?.stats || MOCK_STATS);
+          }
+        } else {
+          // No backend available; enable a safe dev-mode admin view so the UI can be inspected
+          if ((import.meta as any).env?.DEV) {
+            setIsAdmin(true);
+            setStats(MOCK_STATS);
+          } else {
+            setIsAdmin(false);
+          }
         }
       } catch (error) {
         console.error("Admin verification failed:", error);
@@ -58,24 +83,67 @@ const Admin = () => {
 
   const loadProviders = async () => {
     setLoadingProviders(true);
-    try {
-      const response = await fetch('https://backend.youware.com/api/admin/providers');
-      const data = await response.json();
-      setProviders(data.providers || []);
-    } catch (error) {
-      console.error("Failed to load providers:", error);
-    } finally {
-      setLoadingProviders(false);
-    }
+    const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
+
+    const tryFetchJson = async (path: string, opts?: RequestInit) => {
+      const url = BACKEND ? `${BACKEND}${path}` : path;
+      try {
+        const res = await fetch(url, opts);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (err) {
+        console.warn("fetch failed", url, err);
+        return null;
+      }
+    };
+
+    const MOCK_PROVIDERS: Provider[] = [
+      { id: 1, business_name: "John's Plumbing", city: "Johannesburg", verified: 1, rating_average: 4.8, created_at: new Date().toISOString() },
+      { id: 2, business_name: "Sarah's Electrical", city: "Cape Town", verified: 0, rating_average: 4.6, created_at: new Date().toISOString() },
+    ];
+
+    (async () => {
+      try {
+        const token = (typeof window !== 'undefined') ? localStorage.getItem('sc_admin_token') : null;
+        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+        const data = await tryFetchJson('/api/admin/providers', { headers });
+        if (data && data.providers) {
+          setProviders(data.providers || []);
+        } else if ((import.meta as any).env?.DEV) {
+          setProviders(MOCK_PROVIDERS);
+        } else {
+          setProviders([]);
+        }
+      } catch (error) {
+        console.error("Failed to load providers:", error);
+      } finally {
+        setLoadingProviders(false);
+      }
+    })();
   };
 
   const verifyProvider = async (providerId: number, verified: boolean) => {
     try {
-      await fetch('https://backend.youware.com/api/admin/providers/verify', {
+      const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
+      const url = BACKEND ? `${BACKEND}/api/admin/providers/verify` : '/api/admin/providers/verify';
+      const token = (typeof window !== 'undefined') ? localStorage.getItem('sc_admin_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ providerId, verified })
+        headers,
+        body: JSON.stringify({ providerId, verified }),
       });
+
+      if (!res.ok) {
+        // In dev, simulate server response by updating state directly
+        if ((import.meta as any).env?.DEV) {
+          setProviders((prev) => prev.map((p) => (p.id === providerId ? { ...p, verified: verified ? 1 : 0 } : p)));
+          return;
+        }
+        throw new Error('Verification failed');
+      }
+
       // Refresh provider list
       loadProviders();
     } catch (error) {
@@ -108,6 +176,9 @@ const Admin = () => {
               <br />
               Only project creators can access this area.
             </CardDescription>
+            <div className="p-6 text-center">
+              <Button onClick={() => window.location.assign('/admin/login')}>Admin Login</Button>
+            </div>
           </CardHeader>
         </Card>
       </div>
@@ -200,8 +271,8 @@ const Admin = () => {
                       </div>
                       <p className="text-sm text-muted-foreground">{provider.city}</p>
                       <p className="text-xs text-muted-foreground">
-                        Rating: {provider.rating_average.toFixed(1)} ⭐ | 
-                        Joined: {new Date(provider.created_at).toLocaleDateString()}
+                        Rating: {(provider.rating_average ?? 0).toFixed(1)} ⭐ | 
+                        Joined: {provider.created_at ? new Date(provider.created_at).toLocaleDateString() : 'Unknown'}
                       </p>
                     </div>
                     <div className="flex gap-2">

@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+  "mock-server": "node ./mock-server/index.js",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "server": {
+    "mockPort": 4000
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -60,6 +64,11 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
     "zod": "^3.25.76"
+  },
+  "optionalDependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
