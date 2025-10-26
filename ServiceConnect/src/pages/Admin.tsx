@@ -30,7 +30,9 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [usersList, setUsersList] = useState<Array<any>>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   useEffect(() => {
     const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
@@ -122,6 +124,37 @@ const Admin = () => {
     })();
   };
 
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+    const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
+    const tryFetchJson = async (path: string, opts?: RequestInit) => {
+      const url = BACKEND ? `${BACKEND}${path}` : path;
+      try {
+        const res = await fetch(url, opts);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (err) {
+        console.warn("fetch failed", url, err);
+        return null;
+      }
+    };
+
+    try {
+      const token = (typeof window !== 'undefined') ? localStorage.getItem('sc_admin_token') : null;
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const data = await tryFetchJson('/api/admin/users', { headers });
+      if (data && data.users) {
+        setUsersList(data.users || []);
+      } else if ((import.meta as any).env?.DEV) {
+        setUsersList([]);
+      }
+    } catch (error) {
+      console.error('Failed to load users:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   const verifyProvider = async (providerId: number, verified: boolean) => {
     try {
       const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
@@ -148,6 +181,26 @@ const Admin = () => {
       loadProviders();
     } catch (error) {
       console.error("Failed to verify provider:", error);
+    }
+  };
+
+  const approveUser = async (userId: number) => {
+    try {
+      const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
+      const url = BACKEND ? `${BACKEND}/api/admin/users/approve` : '/api/admin/users/approve';
+      const token = (typeof window !== 'undefined') ? localStorage.getItem('sc_admin_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ userId }),
+      });
+      if (!res.ok) throw new Error('Approve failed');
+      // refresh users list
+      loadUsers();
+    } catch (error) {
+      console.error('Failed to approve user:', error);
     }
   };
 
@@ -232,6 +285,44 @@ const Admin = () => {
             );
           })}
         </div>
+
+        {/* User Management */}
+        <Card className="border-2 mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Pending User Approvals</CardTitle>
+                <CardDescription>Review and approve newly created user accounts</CardDescription>
+              </div>
+              <Button onClick={loadUsers} disabled={loadingUsers}>
+                {loadingUsers ? 'Loading...' : 'Load Users'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {usersList.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No users to review. Click "Load Users" to fetch accounts.</p>
+            ) : (
+              <div className="space-y-3">
+                {usersList.map((u) => (
+                  <div key={u.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{u.name} <span className="text-xs text-muted-foreground">({u.email})</span></p>
+                      <p className="text-xs text-muted-foreground">Created: {new Date(u.created_at).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      {u.approved ? (
+                        <Badge variant="secondary">Approved</Badge>
+                      ) : (
+                        <Button size="sm" onClick={() => approveUser(u.id)}>Approve</Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Provider Management */}
         <Card className="border-2">

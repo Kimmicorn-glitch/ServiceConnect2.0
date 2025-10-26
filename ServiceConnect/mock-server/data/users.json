@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "email": "alice@example.com",
+    "password": "alicepass",
+    "name": "Alice Example",
+    "approved": true,
+    "created_at": "2025-10-26T14:09:32.967Z"
+  },
+  {
+    "id": 2,
+    "email": "bob@example.com",
+    "password": "bobpass",
+    "name": "Bob Example",
+    "approved": true,
+    "created_at": "2025-10-26T14:09:32.967Z"
+  }
+]

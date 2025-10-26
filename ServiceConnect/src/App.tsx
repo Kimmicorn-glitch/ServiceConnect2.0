@@ -29,6 +29,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import BecomeProvider from "./pages/BecomeProvider";
 import Pricing from "./pages/Pricing";
@@ -72,6 +73,7 @@ const App = () => (
           {/* New pages */}
           <Route path="/signup" element={<SignUp />} /> {/* Sign up page */}
           <Route path="/login" element={<Login />} /> {/* Login page */}
+          <Route path="/profile" element={<Profile />} /> {/* Profile page */}
           <Route path="/how-it-works" element={<HowItWorksPage />} /> {/* How it works standalone page */}
           <Route path="/become-provider" element={<BecomeProvider />} /> {/* Become a provider */}
           <Route path="/pricing" element={<Pricing />} /> {/* Pricing plans */}

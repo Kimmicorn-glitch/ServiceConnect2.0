@@ -18,10 +18,14 @@ const Login = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || 'Login failed');
+        let data: any = null;
+        try { data = await res.json(); } catch (e) { /* ignore non-json */ }
+        if (!res.ok) {
+          const msg = data?.error || `Login failed (${res.status})`;
+          throw new Error(msg);
+        }
         // store token and user
-        localStorage.setItem('sc_token', data.token);
+        if (data?.token) localStorage.setItem('sc_token', data.token);
         if (data.user?.email) localStorage.setItem('sc_user_email', data.user.email);
         navigate('/');
       } catch (err: any) {

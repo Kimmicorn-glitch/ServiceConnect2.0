@@ -21,12 +21,20 @@ const SignUp = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Signup failed');
-      // store token and user
-      localStorage.setItem('sc_token', data.token);
-      localStorage.setItem('sc_user_email', data.user.email);
-      navigate('/');
+      let data: any = null;
+      try { data = await res.json(); } catch (e) { /* noop */ }
+      if (!res.ok) throw new Error((data && data.error) ? data.error : `Signup failed (${res.status})`);
+
+      // Signup creates an unapproved account in dev. Notify user and return to home.
+      if (data && data.user) {
+        // mark pending email - used by header to show user if needed
+        localStorage.setItem('sc_pending_email', data.user.email);
+        alert('Account created. An administrator will review and approve your account. You will receive an email once approved.');
+        navigate('/');
+      } else {
+        alert('Account created. Awaiting approval.');
+        navigate('/');
+      }
     } catch (err: any) {
       setError(err.message || 'Signup failed');
     } finally {
