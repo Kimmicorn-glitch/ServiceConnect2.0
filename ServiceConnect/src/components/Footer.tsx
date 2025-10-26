@@ -25,6 +25,7 @@ const Footer = () => {
           <div className="col-span-1">
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-primary-foreground/80">
+<<<<<<< HEAD
               <li>
                 <Link to="/" className="hover:text-secondary transition-colors">How It Works</Link>
               </li>
@@ -43,6 +44,13 @@ const Footer = () => {
               <li>
                 <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>
               </li>
+=======
+              <li><Link to="/how-it-works" className="hover:text-secondary transition-colors">How It Works</Link></li>
+              <li><Link to="/services" className="hover:text-secondary transition-colors">Browse Services</Link></li>
+              <li><Link to="/become-provider" className="hover:text-secondary transition-colors">Become a Provider</Link></li>
+              <li><Link to="/pricing" className="hover:text-secondary transition-colors">Pricing</Link></li>
+              <li><Link to="/blog" className="hover:text-secondary transition-colors">Blog & Resources</Link></li>
+>>>>>>> d07207af3b4a46d5577eda7a9e4c3de13fd2768e
             </ul>
           </div>
 
@@ -50,10 +58,17 @@ const Footer = () => {
           <div className="col-span-1">
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-primary-foreground/80">
+<<<<<<< HEAD
               <li><Link to="/help" className="hover:text-secondary transition-colors">Help Center</Link></li>
               <li><Link to="/safety" className="hover:text-secondary transition-colors">Safety Tips</Link></li>
               <li><Link to="/terms" className="hover:text-secondary transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link></li>
+=======
+              <li><Link to="/support" className="hover:text-secondary transition-colors">Help Center</Link></li>
+              <li><Link to="/support#safety" className="hover:text-secondary transition-colors">Safety Tips</Link></li>
+              <li><Link to="/terms" className="hover:text-secondary transition-colors">Terms of Service</Link></li>
+              <li><Link to="/terms#privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link></li>
+>>>>>>> d07207af3b4a46d5577eda7a9e4c3de13fd2768e
             </ul>
           </div>
 

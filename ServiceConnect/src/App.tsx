@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Import all page components
+<<<<<<< HEAD
 import Index from "./pages/Index";
 import Services from "./pages/Services";
 import Providers from "./pages/Providers";
@@ -28,6 +29,21 @@ import SafetyTips from "./pages/SafetyTips";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
+=======
+import Index from "@/pages/Index";
+import Services from "@/pages/Services";
+import Providers from "@/pages/Providers";
+import About from "@/pages/About";
+import NotFound from "@/pages/NotFound";
+import SignUp from "@/pages/SignUp";
+import Admin from "@/pages/Admin";
+import HowItWorksPage from "@/pages/HowItWorksPage";
+import BecomeProvider from "@/pages/BecomeProvider";
+import Pricing from "@/pages/Pricing";
+import Blog from "@/pages/Blog";
+import Support from "@/pages/Support";
+import Terms from "@/pages/Terms";
+>>>>>>> d07207af3b4a46d5577eda7a9e4c3de13fd2768e
 
 // Create a client for React Query (handles data caching)
 const queryClient = new QueryClient();
@@ -59,6 +75,17 @@ const App = () => (
           <Route path="/safety" element={<SafetyTips />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          
+          {/* New pages */}
+          <Route path="/signup" element={<SignUp />} /> {/* Sign up page */}
+          <Route path="/login" element={<SignUp />} /> {/* Login page (reuses SignUp for now) */}
+          <Route path="/admin" element={<Admin />} /> {/* Admin dashboard */}
+          <Route path="/how-it-works" element={<HowItWorksPage />} /> {/* How it works standalone page */}
+          <Route path="/become-provider" element={<BecomeProvider />} /> {/* Become a provider */}
+          <Route path="/pricing" element={<Pricing />} /> {/* Pricing plans */}
+          <Route path="/blog" element={<Blog />} /> {/* Blog and resources */}
+          <Route path="/support" element={<Support />} /> {/* Support and FAQ */}
+          <Route path="/terms" element={<Terms />} /> {/* Terms of service and privacy */}
           
           {/* Catch-all route - shows 404 page for any unmatched URLs */}
           <Route path="*" element={<NotFound />} />

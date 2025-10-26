@@ -13,7 +13,7 @@ const FeaturedProviders = () => {
       reviews: 156,
       verified: true,
       startingPrice: "R350",
-      image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=300&fit=crop",
+      image: "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/d2fb6bf03f164216963c9e5e7af0e994.jpg",
     },
     {
       name: "Cape Town Electrical Experts",
@@ -23,7 +23,7 @@ const FeaturedProviders = () => {
       reviews: 203,
       verified: true,
       startingPrice: "R450",
-      image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&h=300&fit=crop",
+      image: "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/f74c2e3c6606445a8fff2399156c5a4b.jpg",
     },
     {
       name: "Rainbow Painting Co",
@@ -33,7 +33,7 @@ const FeaturedProviders = () => {
       reviews: 89,
       verified: true,
       startingPrice: "R280",
-      image: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=400&h=300&fit=crop",
+      image: "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/15ec2f0482b945d588b1a593856a0d34.jpg",
     },
     {
       name: "Green Thumb Gardens",
@@ -43,7 +43,7 @@ const FeaturedProviders = () => {
       reviews: 142,
       verified: true,
       startingPrice: "R320",
-      image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop",
+      image: "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/2a14a529a2d648d2b2090078e366a9c4.png",
     },
   ];
 
