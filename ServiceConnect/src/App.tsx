@@ -37,6 +37,7 @@ import Blog from "./pages/Blog";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import Header from "./components/Header";
+import { AuthProvider } from './contexts/AuthContext';
 
 // Create a client for React Query (handles data caching)
 const queryClient = new QueryClient();
@@ -54,37 +55,39 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <AuthProvider>
         <BrowserRouter>
           <Header />
           <Routes>
-          {/* Define all routes - each Route connects a URL path to a page component */}
-          <Route path="/" element={<Index />} /> {/* Home page */}
-          <Route path="/services" element={<Services />} /> {/* Services listing */}
-          <Route path="/providers" element={<Providers />} /> {/* Provider profiles */}
-          <Route path="/about" element={<About />} /> {/* About page */}
-          <Route path="/contact" element={<Contact />} /> {/* Contact page */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<Admin />} /> {/* Admin dashboard */}
-          <Route path="/help" element={<HelpCenter />} />
-          <Route path="/safety" element={<SafetyTips />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          
-          {/* New pages */}
-          <Route path="/signup" element={<SignUp />} /> {/* Sign up page */}
-          <Route path="/login" element={<Login />} /> {/* Login page */}
-          <Route path="/profile" element={<Profile />} /> {/* Profile page */}
-          <Route path="/how-it-works" element={<HowItWorksPage />} /> {/* How it works standalone page */}
-          <Route path="/become-provider" element={<BecomeProvider />} /> {/* Become a provider */}
-          <Route path="/pricing" element={<Pricing />} /> {/* Pricing plans */}
-          <Route path="/blog" element={<Blog />} /> {/* Blog and resources */}
-          <Route path="/support" element={<Support />} /> {/* Support and FAQ */}
-          <Route path="/terms" element={<Terms />} />
-          
-          {/* Catch-all route - shows 404 page for any unmatched URLs */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Define all routes - each Route connects a URL path to a page component */}
+            <Route path="/" element={<Index />} /> {/* Home page */}
+            <Route path="/services" element={<Services />} /> {/* Services listing */}
+            <Route path="/providers" element={<Providers />} /> {/* Provider profiles */}
+            <Route path="/about" element={<About />} /> {/* About page */}
+            <Route path="/contact" element={<Contact />} /> {/* Contact page */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<Admin />} /> {/* Admin dashboard */}
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/safety" element={<SafetyTips />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            
+            {/* New pages */}
+            <Route path="/signup" element={<SignUp />} /> {/* Sign up page */}
+            <Route path="/login" element={<Login />} /> {/* Login page */}
+            <Route path="/profile" element={<Profile />} /> {/* Profile page */}
+            <Route path="/how-it-works" element={<HowItWorksPage />} /> {/* How it works standalone page */}
+            <Route path="/become-provider" element={<BecomeProvider />} /> {/* Become a provider */}
+            <Route path="/pricing" element={<Pricing />} /> {/* Pricing plans */}
+            <Route path="/blog" element={<Blog />} /> {/* Blog and resources */}
+            <Route path="/support" element={<Support />} /> {/* Support and FAQ */}
+            <Route path="/terms" element={<Terms />} />
+            
+            {/* Catch-all route - shows 404 page for any unmatched URLs */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

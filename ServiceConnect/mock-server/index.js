@@ -7,6 +7,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 import path from 'path';
+import nodemailer from 'nodemailer';
 
 const app = express();
 const PORT = process.env.MOCK_PORT || 4000;
@@ -20,6 +21,7 @@ try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) { /* ignore */ }
 
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const EMAILS_FILE = path.join(DATA_DIR, 'sent_emails.json');
+const PROVIDERS_FILE = path.join(DATA_DIR, 'providers.json');
 
 const providers = [
   { id: 1, business_name: "John's Plumbing", city: "Johannesburg", verified: 1, rating_average: 4.8, created_at: new Date().toISOString() },
@@ -52,12 +54,41 @@ const saveUsers = () => {
   }
 };
 
+// Configure nodemailer transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587', 10),
+  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER, // SMTP username
+    pass: process.env.SMTP_PASS, // SMTP password
+  },
+});
+
+const sendEmail = async (emailObj) => {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'no-reply@serviceconnect.com',
+      to: emailObj.to,
+      subject: emailObj.subject,
+      text: emailObj.body,
+    });
+    console.log('Email sent:', info.messageId);
+  } catch (error) {
+    console.error('Failed to send email:', error);
+  }
+};
+
+// Update appendEmail to also send real emails
 const appendEmail = (emailObj) => {
   try {
     const now = new Date().toISOString();
     const list = fs.existsSync(EMAILS_FILE) ? JSON.parse(fs.readFileSync(EMAILS_FILE, 'utf8')) || [] : [];
     list.push({ ...emailObj, created_at: now });
     fs.writeFileSync(EMAILS_FILE, JSON.stringify(list, null, 2));
+
+    // Send real email
+    sendEmail(emailObj);
   } catch (e) {
     console.warn('Failed to append email file', e);
   }
@@ -168,11 +199,31 @@ app.post('/api/admin/users/approve', (req, res) => {
   return res.json({ ok: true, user: { id: u.id, email: u.email, name: u.name, approved: true } });
 });
 
+// Load providers from disk if present
+try {
+  if (fs.existsSync(PROVIDERS_FILE)) {
+    const savedProviders = JSON.parse(fs.readFileSync(PROVIDERS_FILE, 'utf8')) || [];
+    providers.push(...savedProviders);
+  }
+} catch (e) {
+  console.warn('Failed to read providers.json, using default providers', e);
+}
+
+const saveProviders = () => {
+  try {
+    fs.writeFileSync(PROVIDERS_FILE, JSON.stringify(providers, null, 2));
+  } catch (e) {
+    console.error('Failed to save providers file', e);
+  }
+};
+
+// Update provider verification to persist changes
 app.post('/api/admin/providers/verify', (req, res) => {
   const { providerId, verified } = req.body || {};
   const p = providers.find((x) => x.id === providerId);
   if (!p) return res.status(404).json({ ok: false, error: 'Provider not found' });
   p.verified = verified ? 1 : 0;
+  saveProviders();
   return res.json({ ok: true, provider: p });
 });
 
@@ -181,6 +232,21 @@ app.post('/api/contact', (req, res) => {
   console.log('[mock-server] contact received', { name, email, message });
   // In a real server you'd send email or store message. Here, just return success.
   return res.json({ ok: true });
+});
+
+// Admin: fetch sent emails
+app.get('/api/admin/emails', (req, res) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.replace(/^Bearer\s*/i, '');
+  if (token !== VALID_TOKEN) return res.status(403).json({ ok: false, error: 'Forbidden' });
+
+  try {
+    const emails = fs.existsSync(EMAILS_FILE) ? JSON.parse(fs.readFileSync(EMAILS_FILE, 'utf8')) || [] : [];
+    return res.json({ ok: true, emails });
+  } catch (e) {
+    console.error('Failed to read sent emails file', e);
+    return res.status(500).json({ ok: false, error: 'Failed to fetch emails' });
+  }
 });
 
 app.listen(PORT, () => {

@@ -25,14 +25,23 @@ interface Provider {
   created_at: string;
 }
 
+interface Email {
+  to: string;
+  subject: string;
+  body: string;
+  created_at: string;
+}
+
 const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [usersList, setUsersList] = useState<Array<any>>([]);
+  const [emails, setEmails] = useState<Email[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingEmails, setLoadingEmails] = useState(false);
 
   useEffect(() => {
     const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
@@ -152,6 +161,37 @@ const Admin = () => {
       console.error('Failed to load users:', error);
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const loadEmails = async () => {
+    setLoadingEmails(true);
+    const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
+    const tryFetchJson = async (path: string, opts?: RequestInit) => {
+      const url = BACKEND ? `${BACKEND}${path}` : path;
+      try {
+        const res = await fetch(url, opts);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (err) {
+        console.warn("fetch failed", url, err);
+        return null;
+      }
+    };
+
+    try {
+      const token = (typeof window !== 'undefined') ? localStorage.getItem('sc_admin_token') : null;
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const data = await tryFetchJson('/api/admin/emails', { headers });
+      if (data && data.emails) {
+        setEmails(data.emails || []);
+      } else {
+        setEmails([]);
+      }
+    } catch (error) {
+      console.error('Failed to load emails:', error);
+    } finally {
+      setLoadingEmails(false);
     }
   };
 
@@ -387,6 +427,37 @@ const Admin = () => {
                         </Button>
                       )}
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Emails Section */}
+        <Card className="border-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Sent Emails</CardTitle>
+                <CardDescription>View all emails sent by the platform</CardDescription>
+              </div>
+              <Button onClick={loadEmails} disabled={loadingEmails}>
+                {loadingEmails ? 'Loading...' : 'Load Emails'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {emails.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No emails to display. Click "Load Emails" to fetch data.</p>
+            ) : (
+              <div className="space-y-3">
+                {emails.map((email, index) => (
+                  <div key={index} className="p-3 border rounded-lg">
+                    <p className="font-medium">To: {email.to}</p>
+                    <p className="text-sm text-muted-foreground">Subject: {email.subject}</p>
+                    <p className="text-xs text-muted-foreground">Sent: {new Date(email.created_at).toLocaleString()}</p>
+                    <p className="mt-2 text-sm">{email.body}</p>
                   </div>
                 ))}
               </div>
