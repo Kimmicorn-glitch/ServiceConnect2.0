@@ -16,19 +16,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Import all page components
-import Index from "./pages/Index";
-import Services from "./pages/Services";
-import Providers from "./pages/Providers";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
-import SignUp from "./pages/SignUp";
-import Admin from "./pages/Admin";
-import HowItWorksPage from "./pages/HowItWorksPage";
-import BecomeProvider from "./pages/BecomeProvider";
-import Pricing from "./pages/Pricing";
-import Blog from "./pages/Blog";
-import Support from "./pages/Support";
-import Terms from "./pages/Terms";
+import Index from "@/pages/Index";
+import Services from "@/pages/Services";
+import Providers from "@/pages/Providers";
+import About from "@/pages/About";
+import NotFound from "@/pages/NotFound";
+import SignUp from "@/pages/SignUp";
+import Admin from "@/pages/Admin";
+import HowItWorksPage from "@/pages/HowItWorksPage";
+import BecomeProvider from "@/pages/BecomeProvider";
+import Pricing from "@/pages/Pricing";
+import Blog from "@/pages/Blog";
+import Support from "@/pages/Support";
+import Terms from "@/pages/Terms";
 
 // Create a client for React Query (handles data caching)
 const queryClient = new QueryClient();
