@@ -11,7 +11,9 @@ import path from 'path';
 const app = express();
 const PORT = process.env.MOCK_PORT || 4000;
 
-app.use(cors({ origin: true, credentials: true }));
+// Restrict CORS to local dev frontend by default. Override with MOCK_CORS_ORIGIN if needed.
+const ALLOWED_ORIGIN = process.env.MOCK_CORS_ORIGIN || 'http://localhost:5173';
+app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(bodyParser.json());
 
 // Simple data persistence in mock-server/data
@@ -20,11 +22,35 @@ try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) { /* ignore */ }
 
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const EMAILS_FILE = path.join(DATA_DIR, 'sent_emails.json');
+const PROVIDERS_FILE = path.join(DATA_DIR, 'providers.json');
 
-const providers = [
-  { id: 1, business_name: "John's Plumbing", city: "Johannesburg", verified: 1, rating_average: 4.8, created_at: new Date().toISOString() },
-  { id: 2, business_name: "Sarah's Electrical", city: "Cape Town", verified: 0, rating_average: 4.6, created_at: new Date().toISOString() },
-];
+// Helper: atomic write (write to temp then rename)
+function atomicWrite(filePath, data) {
+  try {
+    const tmp = `${filePath}.tmp`;
+    fs.writeFileSync(tmp, data, { encoding: 'utf8' });
+    fs.renameSync(tmp, filePath);
+  } catch (e) {
+    console.error('[mock-server] atomic write failed', e);
+  }
+}
+
+// Load or seed providers
+let providers = [];
+try {
+  if (fs.existsSync(PROVIDERS_FILE)) {
+    providers = JSON.parse(fs.readFileSync(PROVIDERS_FILE, 'utf8')) || [];
+  }
+} catch (e) {
+  console.warn('Failed to read providers.json, will seed defaults', e);
+}
+if (!providers || providers.length === 0) {
+  providers = [
+    { id: 1, business_name: "John's Plumbing", city: "Johannesburg", verified: 1, rating_average: 4.8, created_at: new Date().toISOString() },
+    { id: 2, business_name: "Sarah's Electrical", city: "Cape Town", verified: 0, rating_average: 4.6, created_at: new Date().toISOString() },
+  ];
+  atomicWrite(PROVIDERS_FILE, JSON.stringify(providers, null, 2));
+}
 
 // Load users from disk if present, otherwise seed two accounts
 let users = [];
@@ -41,23 +67,49 @@ if (!users || users.length === 0) {
     { id: 1, email: 'alice@example.com', password: 'alicepass', name: 'Alice Example', approved: true, created_at: new Date().toISOString() },
     { id: 2, email: 'bob@example.com', password: 'bobpass', name: 'Bob Example', approved: true, created_at: new Date().toISOString() },
   ];
-  try { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); } catch (e) { console.warn('Failed to write users seed file', e); }
+  atomicWrite(USERS_FILE, JSON.stringify(users, null, 2));
 }
 
 const saveUsers = () => {
-  try {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-  } catch (e) {
-    console.error('Failed to save users file', e);
-  }
+  atomicWrite(USERS_FILE, JSON.stringify(users, null, 2));
 };
+
+const saveProviders = () => {
+  atomicWrite(PROVIDERS_FILE, JSON.stringify(providers, null, 2));
+};
+
+// Email sending: either use nodemailer (if configured) or append to file
+let smtpTransport = null;
+let smtpEnabled = false;
+if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+  try {
+    // require inside try so the server still runs if nodemailer isn't installed
+    // If you want real email sending, install nodemailer and set SMTP_* env vars.
+    // npm install nodemailer
+    // ENV: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
+    // Dynamic require to avoid breaking if nodemailer isn't present
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const nodemailer = require('nodemailer');
+    smtpTransport = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === '1' || process.env.SMTP_SECURE === 'true',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    });
+    smtpEnabled = true;
+    console.log('[mock-server] SMTP enabled');
+  } catch (e) {
+    console.warn('[mock-server] nodemailer not installed or SMTP invalid; falling back to file-based email simulation');
+    smtpEnabled = false;
+  }
+}
 
 const appendEmail = (emailObj) => {
   try {
     const now = new Date().toISOString();
     const list = fs.existsSync(EMAILS_FILE) ? JSON.parse(fs.readFileSync(EMAILS_FILE, 'utf8')) || [] : [];
     list.push({ ...emailObj, created_at: now });
-    fs.writeFileSync(EMAILS_FILE, JSON.stringify(list, null, 2));
+    atomicWrite(EMAILS_FILE, JSON.stringify(list, null, 2));
   } catch (e) {
     console.warn('Failed to append email file', e);
   }
@@ -129,11 +181,11 @@ app.get('/api/auth/is-admin', (req, res) => {
 });
 
 app.get('/api/admin/stats', (req, res) => {
-  res.json({ stats: { users: 1024, providers: providers.length, bookings: 456, reviews: 789 } });
+  res.json({ stats: { users: users.length, providers: providers.length, bookings: 456, reviews: 789 } });
 });
 
 app.get('/api/admin/providers', (req, res) => {
-  res.json({ providers });
+  return res.json({ providers });
 });
 
 // Admin: list users (requires admin token)
@@ -144,8 +196,21 @@ app.get('/api/admin/users', (req, res) => {
   return res.json({ ok: true, users: users.map((u) => ({ id: u.id, email: u.email, name: u.name, approved: !!u.approved, created_at: u.created_at })) });
 });
 
+// Admin: get sent emails (requires admin token)
+app.get('/api/admin/emails', (req, res) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.replace(/^Bearer\s*/i, '');
+  if (token !== VALID_TOKEN) return res.status(403).json({ ok: false, error: 'Forbidden' });
+  try {
+    const list = fs.existsSync(EMAILS_FILE) ? JSON.parse(fs.readFileSync(EMAILS_FILE, 'utf8')) || [] : [];
+    return res.json({ ok: true, emails: list });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: 'Failed to read emails' });
+  }
+});
+
 // Admin: approve user
-app.post('/api/admin/users/approve', (req, res) => {
+app.post('/api/admin/users/approve', async (req, res) => {
   const auth = req.headers.authorization || '';
   const token = auth.replace(/^Bearer\s*/i, '');
   if (token !== VALID_TOKEN) return res.status(403).json({ ok: false, error: 'Forbidden' });
@@ -155,24 +220,46 @@ app.post('/api/admin/users/approve', (req, res) => {
   u.approved = true;
   saveUsers();
 
-  // Simulate sending an approval email
+  // Simulate sending an approval email and optionally send real SMTP
   const approvalToken = `token-user-${u.id}`;
   const emailObj = {
     to: u.email,
     subject: 'Your ServiceConnect account has been approved',
     body: `Hello ${u.name},\n\nYour account has been approved. You can now login. Token: ${approvalToken}\n\nRegards, ServiceConnect Team`
   };
-  appendEmail(emailObj);
-  console.log('[mock-server] Sent approval email', emailObj);
+
+  // If SMTP is configured and nodemailer available, send real mail
+  if (smtpEnabled && smtpTransport) {
+    try {
+      await smtpTransport.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: emailObj.to,
+        subject: emailObj.subject,
+        text: emailObj.body,
+      });
+      // store record that real mail was sent
+      appendEmail({ ...emailObj, sent_via: 'smtp' });
+      console.log('[mock-server] Sent real SMTP approval email to', u.email);
+    } catch (e) {
+      console.warn('[mock-server] Failed to send SMTP email, falling back to file:', e);
+      appendEmail({ ...emailObj, sent_via: 'file_on_error' });
+    }
+  } else {
+    appendEmail(emailObj);
+  }
 
   return res.json({ ok: true, user: { id: u.id, email: u.email, name: u.name, approved: true } });
 });
 
 app.post('/api/admin/providers/verify', (req, res) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.replace(/^Bearer\s*/i, '');
+  if (token !== VALID_TOKEN) return res.status(403).json({ ok: false, error: 'Forbidden' });
   const { providerId, verified } = req.body || {};
   const p = providers.find((x) => x.id === providerId);
   if (!p) return res.status(404).json({ ok: false, error: 'Provider not found' });
   p.verified = verified ? 1 : 0;
+  saveProviders();
   return res.json({ ok: true, provider: p });
 });
 
@@ -186,4 +273,5 @@ app.post('/api/contact', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Mock backend running on http://localhost:${PORT}`);
   console.log(`Admin password (DEV): ${ADMIN_PASSWORD}`);
+  console.log(`[mock-server] CORS origin allowed: ${ALLOWED_ORIGIN}`);
 });

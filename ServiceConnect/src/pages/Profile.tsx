@@ -1,30 +1,8 @@
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Profile = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      const token = localStorage.getItem('sc_token');
-      try {
-        const res = await fetch('/api/auth/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-        const data = await res.json();
-        if (res.ok && data.user) setUser(data.user);
-      } catch (e) {
-        console.warn('Failed to load profile', e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('sc_token');
-    localStorage.removeItem('sc_user_email');
-    window.location.assign('/');
-  };
+  const { user, logout, loading } = useAuth();
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -47,7 +25,7 @@ const Profile = () => {
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Approved:</strong> {user.approved ? 'Yes' : 'No'}</p>
           <div className="pt-4">
-            <Button onClick={handleLogout}>Log out</Button>
+            <Button onClick={() => { logout(); window.location.assign('/'); }}>Log out</Button>
           </div>
         </div>
       </div>
