@@ -14,5 +14,13 @@
     "name": "Bob Example",
     "approved": true,
     "created_at": "2025-10-26T14:09:32.967Z"
+  },
+  {
+    "id": 3,
+    "email": "kimbez49@gmail.com",
+    "password": "kim54664",
+    "name": "kim",
+    "approved": false,
+    "created_at": "2025-10-26T17:03:18.117Z"
   }
 ]

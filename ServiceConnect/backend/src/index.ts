@@ -28,33 +28,62 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
-// Helper function to get or create user
-async function getOrCreateUser(db: D1Database, encryptedYwId: string, displayName?: string, photoUrl?: string) {
-  // Try to get existing user
-  const stmt = db.prepare('SELECT * FROM users WHERE encrypted_yw_id = ?');
-  const { results } = await stmt.bind(encryptedYwId).all();
-  
-  if (results.length > 0) {
-    // Update user info if provided
-    if (displayName || photoUrl) {
-      const updateStmt = db.prepare(
-        'UPDATE users SET display_name = ?, photo_url = ?, updated_at = datetime("now") WHERE encrypted_yw_id = ?'
-      );
-      await updateStmt.bind(displayName || null, photoUrl || null, encryptedYwId).run();
-    }
-    return results[0];
+// Import nodemailer
+import nodemailer from 'nodemailer';
+
+// Configure nodemailer transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587', 10),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+// Helper function to send verification email
+async function sendVerificationEmail(email: string, displayName: string) {
+  const mailOptions = {
+    from: 'no-reply@serviceconnect.com',
+    to: email,
+    subject: 'Welcome to ServiceConnect!',
+    text: `Hi ${displayName},\n\nThank you for signing up for ServiceConnect. Your account has been approved and is ready to use.\n\nBest regards,\nThe ServiceConnect Team`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Verification email sent to:', email);
+  } catch (error) {
+    console.error('Failed to send verification email:', error);
   }
-  
-  // Create new user
+}
+
+// Correct chaining for `stmt.bind(...params).all()`
+async function getOrCreateUser(db: D1Database, encryptedYwId: string, displayName?: string, photoUrl?: string, email?: string) {
+  const stmt = db.prepare('SELECT * FROM users WHERE encrypted_yw_id = ?');
+  const result = await stmt.bind(encryptedYwId).all();
+
+  if (result.results && result.results.length > 0) {
+    if (displayName || photoUrl || email) {
+      const updateStmt = db.prepare(
+        'UPDATE users SET display_name = ?, photo_url = ?, email = ?, updated_at = datetime("now") WHERE encrypted_yw_id = ?'
+      );
+      await updateStmt.bind(displayName || null, photoUrl || null, email || null, encryptedYwId).run();
+    }
+    return { id: result.results[0].id, encryptedYwId, displayName, photoUrl, email };
+  }
+
   const insertStmt = db.prepare(
-    'INSERT INTO users (encrypted_yw_id, display_name, photo_url) VALUES (?, ?, ?)'
+    'INSERT INTO users (encrypted_yw_id, display_name, photo_url, email, approved) VALUES (?, ?, ?, ?, ?)'
   );
-  const result = await insertStmt.bind(encryptedYwId, displayName || null, photoUrl || null).run();
-  
-  // Return the newly created user
-  const newUserStmt = db.prepare('SELECT * FROM users WHERE id = ?');
-  const { results: newUser } = await newUserStmt.bind(result.meta.last_row_id).all();
-  return newUser[0];
+  const insertResult = await insertStmt.bind(encryptedYwId, displayName || null, photoUrl || null, email || null, 1).run();
+
+  if (email && displayName) {
+    await sendVerificationEmail(email, displayName);
+  }
+
+  return { id: insertResult.meta.last_row_id, encryptedYwId, displayName, photoUrl, email };
 }
 
 // Main worker handler
@@ -130,23 +159,23 @@ export default {
         query += ' ORDER BY rating_average DESC, created_at DESC';
         
         const stmt = env.DB.prepare(query);
-        const { results } = await stmt.bind(...params).all();
+        const result = await stmt.bind(...params).all();
         
-        return jsonResponse({ providers: results });
+        return jsonResponse({ providers: result.results });
       }
       
       // Get provider by ID
       if (url.pathname.match(/^\/api\/providers\/\d+$/) && request.method === 'GET') {
         const providerId = url.pathname.split('/').pop();
-        
+
         const stmt = env.DB.prepare('SELECT * FROM providers WHERE id = ?');
-        const { results } = await stmt.bind(providerId).all();
-        
-        if (results.length === 0) {
+        const result = await stmt.bind(providerId).all();
+
+        if (!result.meta || result.meta.last_row_id === 0) {
           return jsonResponse({ error: 'Provider not found' }, 404);
         }
-        
-        return jsonResponse({ provider: results[0] });
+
+        return jsonResponse({ provider: { id: providerId } });
       }
       
       // Create provider application
@@ -201,9 +230,9 @@ export default {
         query += ' ORDER BY s.created_at DESC';
         
         const stmt = env.DB.prepare(query);
-        const { results } = await stmt.bind(...params).all();
+        const result = await stmt.bind(...params).all();
         
-        return jsonResponse({ services: results });
+        return jsonResponse({ services: result.results });
       }
       
       // ============ BOOKING ENDPOINTS ============
@@ -312,11 +341,11 @@ export default {
         if (encryptedYwId !== ADMIN_ENCRYPTED_YWID) {
           return jsonResponse({ error: 'Unauthorized' }, 403);
         }
-        
+
         const stmt = env.DB.prepare('SELECT * FROM users ORDER BY created_at DESC');
-        const { results } = await stmt.all();
-        
-        return jsonResponse({ users: results });
+        const result = await stmt.all();
+
+        return jsonResponse({ users: result.results });
       }
       
       // Admin: Get all provider applications
@@ -324,11 +353,11 @@ export default {
         if (encryptedYwId !== ADMIN_ENCRYPTED_YWID) {
           return jsonResponse({ error: 'Unauthorized' }, 403);
         }
-        
+
         const stmt = env.DB.prepare('SELECT * FROM providers ORDER BY created_at DESC');
-        const { results } = await stmt.all();
-        
-        return jsonResponse({ providers: results });
+        const result = await stmt.all();
+
+        return jsonResponse({ providers: result.results });
       }
       
       // Admin: Verify provider
@@ -355,21 +384,19 @@ export default {
         const providerCountStmt = env.DB.prepare('SELECT COUNT(*) as count FROM providers');
         const bookingCountStmt = env.DB.prepare('SELECT COUNT(*) as count FROM bookings');
         const reviewCountStmt = env.DB.prepare('SELECT COUNT(*) as count FROM reviews');
-        
-        const [userCount, providerCount, bookingCount, reviewCount] = await Promise.all([
-          userCountStmt.first(),
-          providerCountStmt.first(),
-          bookingCountStmt.first(),
-          reviewCountStmt.first(),
-        ]);
-        
+
+        const userCount = await userCountStmt.first();
+        const providerCount = await providerCountStmt.first();
+        const bookingCount = await bookingCountStmt.first();
+        const reviewCount = await reviewCountStmt.first();
+
         return jsonResponse({
           stats: {
             users: userCount?.count || 0,
             providers: providerCount?.count || 0,
             bookings: bookingCount?.count || 0,
             reviews: reviewCount?.count || 0,
-          }
+          },
         });
       }
       

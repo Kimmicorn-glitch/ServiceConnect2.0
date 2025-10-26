@@ -1,0 +1,12 @@
+name = "serviceconnect"
+compatibility_date = "2025-10-26"
+
+[[d1_databases]]
+binding = "DB" # Name of the binding in the worker environment
+database_name = "serviceconnect-db" # Name of the D1 database
+
+[vars]
+SMTP_HOST = "smtp.example.com"
+SMTP_PORT = "587"
+SMTP_USER = "user@example.com"
+SMTP_PASS = "password"

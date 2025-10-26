@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Alert } from '@/components/ui/alert';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
