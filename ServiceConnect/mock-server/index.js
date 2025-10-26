@@ -12,7 +12,22 @@ import nodemailer from 'nodemailer';
 const app = express();
 const PORT = process.env.MOCK_PORT || 4000;
 
-app.use(cors({ origin: true, credentials: true }));
+const TRUSTED_ORIGINS = [
+  'https://serviceconnect.com',
+  'https://www.serviceconnect.com',
+  'http://localhost:3000',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || TRUSTED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(bodyParser.json());
 
 // Simple data persistence in mock-server/data
