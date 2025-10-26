@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from '@/contexts/AuthContext';
+import { Alert } from '@/components/ui/alert';
 
 const Profile = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,7 +43,13 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">My Profile</h1>
+        {!user.approved && (
+          <Alert variant="warning" className="mb-4">
+            Your account is pending approval. You will be notified once approved.
+          </Alert>
+        )}
+        <h1 className="text-2xl font-bold mb-4">Welcome, {user.name}</h1>
+        <p>Email: {user.email}</p>
         <div className="space-y-3 bg-card p-6 rounded-lg border">
           <p><strong>Name:</strong> {user.name}</p>
           <p><strong>Email:</strong> {user.email}</p>
