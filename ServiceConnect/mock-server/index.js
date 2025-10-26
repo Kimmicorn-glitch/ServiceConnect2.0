@@ -18,16 +18,62 @@ let providers = [
   { id: 2, business_name: "Sarah's Electrical", city: "Cape Town", verified: 0, rating_average: 4.6, created_at: new Date().toISOString() },
 ];
 
+// In-memory users for simple auth (dev only)
+let users = [
+  { id: 1, email: 'alice@example.com', password: 'alicepass', name: 'Alice Example', created_at: new Date().toISOString() },
+  { id: 2, email: 'bob@example.com', password: 'bobpass', name: 'Bob Example', created_at: new Date().toISOString() },
+];
+
 const ADMIN_PASSWORD = process.env.DEV_ADMIN_PASSWORD || 'devpassword';
 const VALID_TOKEN = 'mock-admin-token';
 
 app.post('/api/auth/login', (req, res) => {
-  const { password } = req.body || {};
+  const { email, password } = req.body || {};
+
+  // Email/password login for normal users
+  if (email) {
+    const user = users.find((u) => u.email.toLowerCase() === (email || '').toLowerCase());
+    if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
+    if (user.password !== password) return res.status(401).json({ ok: false, error: 'Invalid credentials' });
+    const token = `token-user-${user.id}`;
+    return res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name } });
+  }
+
+  // Legacy admin-only password login (dev convenience)
   if (!password) return res.status(400).json({ error: 'Missing password' });
   if (password === ADMIN_PASSWORD) {
     return res.json({ ok: true, token: VALID_TOKEN });
   }
   return res.status(401).json({ ok: false, error: 'Invalid password' });
+});
+
+// Sign up
+app.post('/api/auth/signup', (req, res) => {
+  const { email, password, name } = req.body || {};
+  if (!email || !password) return res.status(400).json({ ok: false, error: 'Missing email or password' });
+  const exists = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  if (exists) return res.status(409).json({ ok: false, error: 'Email already registered' });
+  const id = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1;
+  const user = { id, email, password, name: name || email.split('@')[0], created_at: new Date().toISOString() };
+  users.push(user);
+  const token = `token-user-${user.id}`;
+  return res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name } });
+});
+
+// Get current user from token
+app.get('/api/auth/me', (req, res) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.replace(/^Bearer\s*/i, '') || req.query?.token;
+  if (!token) return res.status(401).json({ ok: false, error: 'Missing token' });
+  if (token === VALID_TOKEN) return res.json({ ok: true, isAdmin: true });
+  const m = token.match(/^token-user-(\d+)$/);
+  if (m) {
+    const id = Number(m[1]);
+    const user = users.find((u) => u.id === id);
+    if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
+    return res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name } });
+  }
+  return res.status(401).json({ ok: false, error: 'Invalid token' });
 });
 
 app.get('/api/auth/is-admin', (req, res) => {

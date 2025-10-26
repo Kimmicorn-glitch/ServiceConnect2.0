@@ -28,12 +28,14 @@ import SafetyTips from "./pages/SafetyTips";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import SignUp from "./pages/SignUp";
+import Login from "./pages/Login";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import BecomeProvider from "./pages/BecomeProvider";
 import Pricing from "./pages/Pricing";
 import Blog from "./pages/Blog";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import Header from "./components/Header";
 
 // Create a client for React Query (handles data caching)
 const queryClient = new QueryClient();
@@ -51,8 +53,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
+        <BrowserRouter>
+          <Header />
+          <Routes>
           {/* Define all routes - each Route connects a URL path to a page component */}
           <Route path="/" element={<Index />} /> {/* Home page */}
           <Route path="/services" element={<Services />} /> {/* Services listing */}
@@ -68,7 +71,7 @@ const App = () => (
           
           {/* New pages */}
           <Route path="/signup" element={<SignUp />} /> {/* Sign up page */}
-          <Route path="/login" element={<SignUp />} /> {/* Login page (reuses SignUp for now) */}
+          <Route path="/login" element={<Login />} /> {/* Login page */}
           <Route path="/how-it-works" element={<HowItWorksPage />} /> {/* How it works standalone page */}
           <Route path="/become-provider" element={<BecomeProvider />} /> {/* Become a provider */}
           <Route path="/pricing" element={<Pricing />} /> {/* Pricing plans */}
