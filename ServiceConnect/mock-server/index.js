@@ -117,18 +117,29 @@ app.post('/api/auth/login', (req, res) => {
 
   // Email/password login for normal users
   if (email) {
-    const user = users.find((u) => u.email.toLowerCase() === (email || '').toLowerCase());
+    const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     if (!user) return res.status(404).json({ ok: false, error: 'User not found' });
     if (user.password !== password) return res.status(401).json({ ok: false, error: 'Invalid credentials' });
     if (!user.approved) return res.status(403).json({ ok: false, error: 'Account pending approval' });
+
     const token = `token-user-${user.id}`;
-    return res.json({ ok: true, token, user: { id: user.id, email: user.email, name: user.name } });
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+    return res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name } });
   }
 
   // Legacy admin-only password login (dev convenience)
   if (!password) return res.status(400).json({ error: 'Missing password' });
   if (password === ADMIN_PASSWORD) {
-    return res.json({ ok: true, token: VALID_TOKEN });
+    res.cookie('auth_token', VALID_TOKEN, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+    return res.json({ ok: true });
   }
   return res.status(401).json({ ok: false, error: 'Invalid password' });
 });
