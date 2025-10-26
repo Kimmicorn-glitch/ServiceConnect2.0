@@ -31,10 +31,8 @@ const Admin = () => {
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [usersList, setUsersList] = useState<Array<any>>([]);
-  const [emailsList, setEmailsList] = useState<Array<any>>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [loadingEmails, setLoadingEmails] = useState(false);
 
   useEffect(() => {
     const BACKEND = (import.meta as any).env?.VITE_BACKEND_URL || "";
@@ -203,26 +201,6 @@ const Admin = () => {
       loadUsers();
     } catch (error) {
       console.error('Failed to approve user:', error);
-    }
-  };
-
-  const loadEmails = async () => {
-    setLoadingEmails(true);
-    try {
-      const token = (typeof window !== 'undefined') ? localStorage.getItem('sc_admin_token') : null;
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      const res = await fetch('/api/admin/emails', { headers });
-      if (!res.ok) {
-        setEmailsList([]);
-        return;
-      }
-      const data = await res.json();
-      setEmailsList(data.emails || []);
-    } catch (error) {
-      console.error('Failed to load emails:', error);
-      setEmailsList([]);
-    } finally {
-      setLoadingEmails(false);
     }
   };
 
@@ -418,36 +396,6 @@ const Admin = () => {
 
         {/* Management Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Sent Emails Viewer */}
-          <Card className="border-2">
-            <CardHeader>
-              <CardTitle>Sent Emails (simulated)</CardTitle>
-              <CardDescription>View the e-mails the mock server recorded/sent</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-4">
-                <div />
-                <div className="flex gap-2">
-                  <Button onClick={loadEmails} disabled={loadingEmails}>{loadingEmails ? 'Loading...' : 'Refresh'}</Button>
-                </div>
-              </div>
-
-              {emailsList.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No emails recorded. Approve a user to generate an email.</p>
-              ) : (
-                <div className="space-y-3">
-                  {emailsList.map((e, idx) => (
-                    <div key={idx} className="p-3 border rounded bg-card">
-                      <p className="text-sm font-medium">To: {e.to} <span className="text-xs text-muted-foreground">{e.sent_via ? `(${e.sent_via})` : ''}</span></p>
-                      <p className="text-sm text-muted-foreground">Subject: {e.subject}</p>
-                      <pre className="whitespace-pre-wrap text-xs text-muted-foreground mt-2">{e.body}</pre>
-                      <p className="text-xs text-muted-foreground mt-2">Sent: {e.created_at ? new Date(e.created_at).toLocaleString() : '—'}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
           {/* Platform Settings */}
           <Card className="border-2">
             <CardHeader>

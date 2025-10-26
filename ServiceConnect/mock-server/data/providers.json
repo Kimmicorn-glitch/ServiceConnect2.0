@@ -1,4 +1,0 @@
-[
-  { "id": 1, "business_name": "John's Plumbing", "city": "Johannesburg", "verified": 1, "rating_average": 4.8, "created_at": "2024-01-01T00:00:00.000Z" },
-  { "id": 2, "business_name": "Sarah's Electrical", "city": "Cape Town", "verified": 0, "rating_average": 4.6, "created_at": "2024-01-02T00:00:00.000Z" }
-]

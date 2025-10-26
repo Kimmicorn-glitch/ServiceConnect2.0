@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -8,7 +7,6 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const auth = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,23 +24,10 @@ const Login = () => {
           const msg = data?.error || `Login failed (${res.status})`;
           throw new Error(msg);
         }
-        // store token and user (use AuthContext for reactive updates)
-        if (data?.token) {
-          // Admin token (dev) vs user token
-          if (data.token === 'mock-admin-token') {
-            localStorage.setItem('sc_admin_token', data.token);
-            // reload to pick up admin state if needed
-            window.location.assign('/admin');
-            return;
-          }
-          // user token
-          localStorage.setItem('sc_token', data.token);
-          if (data.user?.email) localStorage.setItem('sc_user_email', data.user.email);
-          try { await auth.loginWithToken(data.token); } catch (e) { /* ignore */ }
-          navigate('/');
-        } else {
-          navigate('/');
-        }
+        // store token and user
+        if (data?.token) localStorage.setItem('sc_token', data.token);
+        if (data.user?.email) localStorage.setItem('sc_user_email', data.user.email);
+        navigate('/');
       } catch (err: any) {
         alert(err.message || 'Login failed');
       }

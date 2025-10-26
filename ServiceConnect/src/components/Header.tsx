@@ -1,13 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserEmail(localStorage.getItem('sc_user_email'));
+  }, []);
 
   const navLinks = [
     { to: '/', label: 'Home' },
@@ -42,11 +45,11 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-3">
-          {user ? (
+          {userEmail ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">{user.email}</span>
+              <span className="text-sm text-muted-foreground">{userEmail}</span>
               <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>Profile</Button>
-              <Button size="sm" onClick={() => { logout(); navigate('/'); }}>Log out</Button>
+              <Button size="sm" onClick={handleLogout}>Log out</Button>
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-3">
@@ -70,26 +73,10 @@ const Header = () => {
               <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="block text-sm text-muted-foreground hover:text-primary">{l.label}</Link>
             ))}
             <div className="flex gap-2 mt-2">
-              {!user ? (
-                <>
-                  <Button variant="ghost" size="sm" onClick={() => { setOpen(false); navigate('/login'); }}>Log in</Button>
-                  <Button size="sm" onClick={() => { setOpen(false); navigate('/signup'); }}>Sign up</Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="ghost" size="sm" onClick={() => { setOpen(false); navigate('/profile'); }}>Profile</Button>
-                  <Button size="sm" onClick={() => { setOpen(false); logout(); navigate('/'); }}>Log out</Button>
-                </>
-              )}
+              <Button variant="ghost" size="sm" onClick={() => { setOpen(false); navigate('/login'); }}>Log in</Button>
+              <Button size="sm" onClick={() => { setOpen(false); navigate('/signup'); }}>Sign up</Button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Pending approval banner */}
-      {user && user.approved === false && (
-        <div className="w-full bg-yellow-50 border-t border-yellow-200 text-yellow-800 text-sm py-2">
-          <div className="container mx-auto px-4">Your account is pending approval by an administrator. You will receive an email when approved.</div>
         </div>
       )}
     </header>
