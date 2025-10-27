@@ -1,0 +1,43 @@
+[
+    {
+      "name": "Thabo's Plumbing Services",
+      "category": "Plumbing",
+      "location": "Johannesburg",
+      "rating": 4.9,
+      "reviews": 156,
+      "verified": true,
+      "startingPrice": "R350",
+      "image": "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/d2fb6bf03f164216963c9e5e7af0e994.jpg"
+    },
+    {
+      "name": "Cape Town Electrical Experts",
+      "category": "Electrical",
+      "location": "Cape Town",
+      "rating": 4.8,
+      "reviews": 203,
+      "verified": true,
+      "startingPrice": "R450",
+      "image": "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/f74c2e3c6606445a8fff2399156c5a4b.jpg"
+    },
+    {
+      "name": "Rainbow Painting Co",
+      "category": "Painting",
+      "location": "Durban",
+      "rating": 4.7,
+      "reviews": 89,
+      "verified": true,
+      "startingPrice": "R280",
+      "image": "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/15ec2f0482b945d588b1a593856a0d34.jpg"
+    },
+    {
+      "name": "Green Thumb Gardens",
+      "category": "Garden Services",
+      "location": "Pretoria",
+      "rating": 5.0,
+      "reviews": 142,
+      "verified": true,
+      "startingPrice": "R320",
+      "image": "https://public.youware.com/users-website-assets/prod/17fc0c97-909b-4f5c-b745-073dccdf3310/2a14a529a2d648d2b2090078e366a9c4.png"
+    }
+  ]
+  

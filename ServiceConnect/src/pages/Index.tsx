@@ -1,33 +1,37 @@
 /**
  * INDEX PAGE (Homepage)
- * This is the main landing page users see when they visit the site
- * It displays: Hero section, Service categories, How it works, Featured providers, and Footer
+ * Main landing page for users.
+ * Sections included:
+ * - Hero banner with search
+ * - Service categories grid
+ * - How It Works overview
+ * - Featured service providers
+ * - Footer
  */
 
-// Import all the components that make up the homepage
+// Import homepage sections/components
 import Hero from "@/components/Hero";
 import ServiceCategories from "@/components/ServiceCategories";
 import HowItWorks from "@/components/HowItWorks";
-import FeaturedProviders from "@/components/FeaturedProviders";
+import { FeaturedProviders } from "@/components/FeaturedProviders";
 import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    // min-h-screen ensures the page takes at least the full height of the screen
-    <div className="min-h-screen">
-      {/* Hero section - The big banner at the top with search */}
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Section */}
       <Hero />
-      
-      {/* Service Categories - Grid of different service types */}
+
+      {/* Service Categories Grid */}
       <ServiceCategories />
-      
-      {/* How It Works - Explains the process to users */}
+
+      {/* How It Works Section */}
       <HowItWorks />
-      
-      {/* Featured Providers - Shows top-rated service providers */}
+
+      {/* Featured Service Providers */}
       <FeaturedProviders />
-      
-      {/* Footer - Bottom section with links and info */}
+
+      {/* Footer */}
       <Footer />
     </div>
   );
