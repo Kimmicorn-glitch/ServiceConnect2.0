@@ -12,6 +12,15 @@ const Header = () => {
     setUserEmail(localStorage.getItem('sc_user_email'));
   }, []);
 
+  // Auto-close mobile menu if resizing to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setOpen(false); // md breakpoint
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/services', label: 'Services' },
@@ -34,53 +43,87 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white/80 dark:bg-sidebar p-4 sticky top-0 z-50 shadow-sm backdrop-blur-sm">
+    <header className="bg-white/90 dark:bg-sidebar p-4 sticky top-0 z-50 shadow-sm backdrop-blur-sm transition-colors duration-300">
       <div className="container mx-auto px-4 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-extrabold tracking-tight">ServiceConnect</Link>
+        {/* Logo */}
+        <Link to="/" className="text-xl sm:text-2xl font-extrabold tracking-tight">
+          ServiceConnect
+        </Link>
 
+        {/* Desktop Menu */}
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((l) => (
-            <Link key={l.to} to={l.to} className="text-sm text-muted-foreground hover:text-primary transition-colors">{l.label}</Link>
+            <Link
+              key={l.to}
+              to={l.to}
+              className="text-sm sm:text-base text-muted-foreground hover:text-primary transition-colors"
+            >
+              {l.label}
+            </Link>
           ))}
         </nav>
 
+        {/* Right-side buttons & mobile toggle */}
         <div className="flex items-center gap-3">
           {userEmail ? (
-            <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
               <span className="text-sm text-muted-foreground">{userEmail}</span>
               <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>Profile</Button>
               <Button size="sm" onClick={handleLogout}>Log out</Button>
             </div>
           ) : (
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3">
               <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>Log in</Button>
               <Button size="sm" onClick={() => navigate('/signup')}>Sign up</Button>
             </div>
           )}
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2 rounded hover:bg-muted/50" onClick={() => setOpen(!open)} aria-label="Toggle menu">
+          <button
+            className="md:hidden p-2 rounded hover:bg-muted/50 transition-colors"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
+          >
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu panel */}
-      {open && (
-        <div className="md:hidden bg-card border-t">
-          <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
-            {navLinks.map((l) => (
-              <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="block text-sm text-muted-foreground hover:text-primary">{l.label}</Link>
-            ))}
-            <div className="flex gap-2 mt-2">
-              <Button variant="ghost" size="sm" onClick={() => { setOpen(false); navigate('/login'); }}>Log in</Button>
-              <Button size="sm" onClick={() => { setOpen(false); navigate('/signup'); }}>Sign up</Button>
-            </div>
+      {/* Mobile Menu Panel */}
+      <div
+        className={`md:hidden bg-card border-t overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? "max-h-96 py-4" : "max-h-0"
+        }`}
+      >
+        <div className="container mx-auto px-4 flex flex-col gap-3">
+          {navLinks.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              onClick={() => setOpen(false)}
+              className="block text-sm sm:text-base text-muted-foreground hover:text-primary transition-colors"
+            >
+              {l.label}
+            </Link>
+          ))}
+          <div className="flex gap-2 mt-2">
+            {userEmail ? (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => { setOpen(false); navigate('/profile'); }}>Profile</Button>
+                <Button size="sm" onClick={() => { setOpen(false); handleLogout(); }}>Log out</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => { setOpen(false); navigate('/login'); }}>Log in</Button>
+                <Button size="sm" onClick={() => { setOpen(false); navigate('/signup'); }}>Sign up</Button>
+              </>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };
 
 export default Header;
+
