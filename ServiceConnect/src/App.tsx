@@ -31,6 +31,7 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import ProviderProfile from "./pages/ProviderProfile";
+import ProviderProfile from "./pages/ProviderProfile";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import BecomeProvider from "./pages/BecomeProvider";
 import Pricing from "./pages/Pricing";
