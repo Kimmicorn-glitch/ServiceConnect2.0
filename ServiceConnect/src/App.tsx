@@ -30,6 +30,7 @@ import Privacy from "./pages/Privacy";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import ProviderProfile from "./pages/ProviderProfile";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import BecomeProvider from "./pages/BecomeProvider";
 import Pricing from "./pages/Pricing";
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/safety" element={<SafetyTips />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/providers/:name" element={<ProviderProfile />} />
             
             {/* New pages */}
             <Route path="/signup" element={<SignUp />} /> {/* Sign up page */}
